@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" href="https://scontent.fsal2-1.fna.fbcdn.net/v/t39.30808-6/300365407_517167803748118_8419392357319995807_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=tegRh6O4JyEQ7kNvwFXm-6E&_nc_oc=Adr8e0pkUD4adTjYUbhM3aEKogjBe9mlZp1JvfofO6pRTW_kGtI9Vq7DGsCbhPj4n4SKInr6hsUdHrU7gkOFTUWQ&_nc_zt=23&_nc_ht=scontent.fsal2-1.fna&_nc_gid=VNBsRl60CepD5InbW7VjeQ&_nc_ss=7a30f&oh=00_AfwSKdWKljzVAIfarU0PG1atkyQVkLDKWU5OEaCESDiRNg&oe=69CD6EAD">
+    <link rel="icon" href="icon.png">
     <style>
     :root {
         --primary: #2c3e50;
@@ -29,12 +29,136 @@
         background-size: cover;
         background-position: center;
     }
+
+        /* --- NUEVO: Campana de Notificaciones Superior --- */
+        .top-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .bell-btn {
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 1.5em;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .bell-btn:active { transform: scale(0.9); }
+        .bell-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Panel Desplegable de Notificaciones */
+        .notif-panel {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: white;
+            width: 320px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        .notif-panel.show { display: block; animation: slide-down 0.2s ease-out; }
+        @keyframes slide-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .header-info { text-align: center; margin-bottom: 30px; background: transparent; padding: 10px; }
+        .notif-header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notif-header button { background: transparent; border: 1px solid white; color: white; padding: 5px 10px; font-size: 0.8em; }
+        .notif-body { max-height: 350px; overflow-y: auto; background: #f9f9f9; }
+        .notif-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; font-size: 0.95em; background: white; }
+        .notif-item.n-red { border-left: 5px solid var(--danger); }
+        .notif-item.n-yellow { border-left: 5px solid var(--warning); }
+        .notif-empty { padding: 20px; text-align: center; color: #7f8c8d; font-style: italic; }
+        /* ------------------------------------------------- */
+        
+        .header-info { text-align: center; margin-bottom: 30px; background: transparent; padding: 10px; margin-top: 20px; }
         .header-info h1 { color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 2.5em; margin: 10px 0; }
         .header-info p { color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-        .header-info img { border-radius: 50%; border: 3px solid var(--accent); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
         .today-badge { background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        /* Estilos para el Logo y Bubu/Dudu */
+        .logo-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+        .main-logo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            object-fit: cover;
+            position: relative;
+            z-index: 2; /* El logo está por encima */
+            background: white;
+        }
+        
+        /* MODIFICACIÓN: Sale DEL logo, va a la derecha y regresa lento ADENTRO del logo */
+        .character-greeting {
+            position: absolute;
+            top: 25px; /* Ajuste para centrarlo verticalmente respecto al logo */
+            left: 15px; /* Punto inicial: Centro del logo wrapper (aprox) */
+            width: 90px;
+            z-index: 1; /* Pasa por detrás del logo principal al salir/entrar */
+            
+            /* Estado inicial: escondido dentro del logo */
+            opacity: 0;
+            transform: scale(0);
+            
+            animation: dudu-pop-out-walk-back 10s ease-in-out infinite;
+        }
+        
+        @keyframes dudu-pop-out-walk-back {
+            /* 0% - 10%: Nace y sale rápido del logo hacia la derecha */
+            0% { left: 15px; transform: scale(0) scaleX(1); opacity: 0; }
+            5% { opacity: 1; transform: scale(1.1) scaleX(1); } /* Pequeño 'pop' de salida */
+            10% { left: 15px; transform: scale(1) scaleX(1); opacity: 1; }
+            
+            /* 10% - 40%: Camina hacia la derecha (Ida) */
+            40% { left: 150px; transform: scale(1) scaleX(1); opacity: 1; }
+            
+            /* 40% - 50%: Se detiene y se voltea */
+           /* 45% { left: 150px; transform: scale(1) scaleX(1); opacity: 1; }
+            50% { left: 150px; transform: scale(1) scaleX(-2); opacity: 1; }*/
+            
+            /* 50% - 90%: Regresa al logo (Vuelta más lenta, ocupa 40% del tiempo total) */
+            90% { left: 15px; transform: scale(1) scaleX(1); opacity: 1; }
+            
+            /* 90% - 100%: Se mete adentro del logo y desaparece */
+            95% { opacity: 1; transform: scale(1.1) scaleX(-1); }
+            100% { left: 15px; transform: scale(0) scaleX(-1); opacity: 0; }
+        }
 
         .cash-register {
             background: rgba(44, 62, 80, 0.95); color: white; padding: 20px; border-radius: 12px;
@@ -70,7 +194,6 @@
             font-weight: bold; color: var(--primary); font-size: 1.1em; 
         }
 
-        /* AJUSTE PARA CELULAR: Scroll lateral sin romper la tabla */
         .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; min-width: 950px; }
         th { background: #f1f2f6; padding: 12px; border: 1px solid #ddd; color: var(--primary); }
@@ -115,17 +238,38 @@
             .header-info h1 { font-size: 1.8em; }
             .cash-register { padding: 15px; gap: 10px; }
             .cash-register input { width: 75px; }
+            .top-nav { top: 10px; right: 10px; }
         }
     </style>
 </head>
 <body>
 
+<div class="top-nav">
+    <button class="bell-btn" onclick="toggleNotifPanel()">
+        🔔 <div class="bell-badge" id="notif-badge" style="display:none">0</div>
+    </button>
+    <div class="notif-panel" id="notif-panel">
+        <div class="notif-header">
+            <span>Alertas WeAcademy</span>
+            <button onclick="requestSystemNotifications()">Activar</button>
+        </div>
+        <div class="notif-body" id="notif-content">
+            </div>
+    </div>
+</div>
+
 <div class="container">
     <div class="header-info">
-        <img src="https://scontent.fsal2-1.fna.fbcdn.net/v/t39.30808-6/300365407_517167803748118_8419392357319995807_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=tegRh6O4JyEQ7kNvwFXm-6E&_nc_oc=Adr8e0pkUD4adTjYUbhM3aEKogjBe9mlZp1JvfofO6pRTW_kGtI9Vq7DGsCbhPj4n4SKInr6hsUdHrU7gkOFTUWQ&_nc_zt=23&_nc_ht=scontent.fsal2-1.fna&_nc_gid=VNBsRl60CepD5InbW7VjeQ&_nc_ss=7a30f&oh=00_AfwSKdWKljzVAIfarU0PG1atkyQVkLDKWU5OEaCESDiRNg&oe=69CD6EAD" width="120" height="120">
+        <div class="logo-wrapper">
+            <img src="dudu.gif" class="character-greeting" alt="Dudu saliendo del logo">
+            <img class="main-logo" src="icon.png" alt="WeAcademy Logo">
+        </div>
         <h1>WeAcademy!</h1>
         <p>Hoy: <span class="today-badge" id="date-display"></span> de <span id="month-display"></span></p>
     </div>
+    <marquee>
+    <img src="bubu.gif" height="120px" width="120px">
+    </marquee>
 
     <div class="cash-register">
         <h3>Cambio </h3>
@@ -164,7 +308,106 @@
     document.getElementById('date-display').innerText = todayDay;
     document.getElementById('month-display').innerText = monthNames[currentMonthIdx];
 
-    function save() { localStorage.setItem('academyFinalV4', JSON.stringify(data)); }
+    function save() { 
+        localStorage.setItem('academyFinalV4', JSON.stringify(data)); 
+        updateNotificationSystem(false); // Actualiza la campana al guardar datos
+    }
+
+    function checkIsAlert(payDay, isPaid) {
+        if (isPaid) return false;
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const date = today.getDate();
+        
+        const todayDate = new Date(year, month, date);
+        const currentPayDate = new Date(year, month, payDay);
+        const nextMonthPayDate = new Date(year, month + 1, payDay);
+        
+        const diffCurrent = (currentPayDate - todayDate) / (1000 * 60 * 60 * 24);
+        const diffNext = (nextMonthPayDate - todayDate) / (1000 * 60 * 60 * 24);
+        
+        return (diffCurrent >= 0 && diffCurrent <= 3) || (diffNext >= 0 && diffNext <= 3);
+    }
+
+    // --- NUEVO: Sistema Integrado de Notificaciones ---
+    function toggleNotifPanel() {
+        document.getElementById('notif-panel').classList.toggle('show');
+    }
+
+    function requestSystemNotifications() {
+        if (!("Notification" in window)) {
+            alert("Tu navegador no soporta notificaciones push (fuera de la app). Pero el panel de la campana seguirá funcionando.");
+            return;
+        }
+        Notification.requestPermission().then(p => {
+            if(p === 'granted') {
+                alert('¡Notificaciones Push activadas! Te avisaremos incluso si minimizas la ventana.');
+                updateNotificationSystem(true); // Fuerza un aviso push de prueba
+            }
+        });
+    }
+
+    function updateNotificationSystem(triggerPush = false) {
+        let lates = [];
+        let alerts = [];
+        let totalCount = 0;
+        let htmlContent = "";
+        
+        days.forEach(day => {
+            data[day].forEach(sub => {
+                sub.students.forEach(st => {
+                    const paid = st.payments[currentMonthKey];
+                    if (!paid && !st.waiting) {
+                        if (st.payDay < todayDay) {
+                            lates.push(st.name);
+                            totalCount++;
+                            htmlContent += `<div class="notif-item n-red">🔴 <b>${st.name}</b> (${day})<br>Atrasado (Día ${st.payDay})</div>`;
+                        }
+                        else if (checkIsAlert(st.payDay, paid)) {
+                            alerts.push(st.name);
+                            totalCount++;
+                            htmlContent += `<div class="notif-item n-yellow">⚠️ <b>${st.name}</b> (${day})<br>Vence pronto (Día ${st.payDay})</div>`;
+                        }
+                    }
+                });
+            });
+        });
+
+        // Actualizar la campana visual
+        const badge = document.getElementById('notif-badge');
+        if (totalCount > 0) {
+            badge.style.display = 'flex';
+            badge.innerText = totalCount;
+            document.getElementById('notif-content').innerHTML = htmlContent;
+        } else {
+            badge.style.display = 'none';
+            document.getElementById('notif-content').innerHTML = `<div class="notif-empty">¡Todo al día! No hay pagos pendientes cercanos. 🎉</div>`;
+        }
+
+        // Enviar notificación Push (Fuera del navegador) si se solicita y hay permiso
+        if (triggerPush && "Notification" in window && Notification.permission === "granted" && totalCount > 0) {
+            let textBody = `Tienes ${lates.length} pagos atrasados y ${alerts.length} próximos.`;
+            new Notification("¡WeAcademy Alertas!", {
+                body: textBody,
+                icon: "https://i.imgur.com/1Gv25h9.png"
+            });
+        }
+    }
+
+    // --- NUEVO: Función para determinar prioridad de ordenamiento ---
+    function getStatusScore(st) {
+        const paid = st.payments[currentMonthKey];
+        const isLate = (st.payDay < todayDay) && !paid;
+        const inWaiting = st.waiting === true;
+        const isAlert = checkIsAlert(st.payDay, paid);
+
+        if (isLate) return 1;    // Prioridad 1: Rojo (Atrasado)
+        if (isAlert) return 2;   // Prioridad 2: Amarillo (Próximo)
+        if (inWaiting) return 3; // Prioridad 3: Naranja (En espera)
+        return 4;                // Prioridad 4: Normal (Al día o muy lejano)
+    }
+    // -------------------------------------------------------------
 
     function calculateChange() {
         const c = parseFloat(document.getElementById('cash-cuota').value) || 0;
@@ -182,6 +425,13 @@
     }
 
     function handleSearch() {
+        const term = document.getElementById('search-input').value.toLowerCase();
+        if(term.length > 0) {
+            days.forEach(day => {
+                if(data[day].some(sub => sub.students.some(st => st.name.toLowerCase().includes(term))))
+                    localStorage.setItem(`open-${day}`, 'true');
+            });
+        }
         render();
     }
 
@@ -193,7 +443,7 @@
         days.forEach(day => {
             const dayDiv = document.createElement('div');
             dayDiv.className = 'day-section';
-            const isActive = localStorage.getItem(`open-${day}`) === 'true' || searchTerm.length > 0;
+            const isActive = localStorage.getItem(`open-${day}`) === 'true';
             
             dayDiv.innerHTML = `
                 <div class="day-header" onclick="toggleDay('${day}')">
@@ -211,6 +461,8 @@
             app.appendChild(dayDiv);
             renderSubs(day, searchTerm);
         });
+        
+        updateNotificationSystem(false); // Refresca notificaciones al renderizar
     }
 
     function renderSubs(day, searchTerm) {
@@ -219,18 +471,23 @@
         container.innerHTML = '';
 
         data[day].forEach((sub, sIdx) => {
-            const filteredStudents = sub.students.filter(st => st.name.toLowerCase().includes(searchTerm));
+            // Clonamos el array de estudiantes para no modificar el original al ordenar
+            let filteredStudents = sub.students.filter(st => st.name.toLowerCase().includes(searchTerm));
             if (searchTerm && filteredStudents.length === 0) return;
+
+            // --- NUEVO: Ordenar estudiantes por prioridad ---
+            filteredStudents.sort((a, b) => getStatusScore(a) - getStatusScore(b));
+            // ------------------------------------------------
 
             const subDiv = document.createElement('div');
             subDiv.className = 'subgroup';
             
-            let rows = filteredStudents.map((st, stIdx) => {
-                const actualIndex = sub.students.indexOf(st);
+            let rows = filteredStudents.map((st) => {
+                const actualIndex = sub.students.indexOf(st); // Necesitamos el index original para editar
                 const paid = st.payments[currentMonthKey];
                 const isLate = (st.payDay < todayDay) && !paid;
                 const inWaiting = st.waiting === true;
-                const isAlert = (st.payDay >= todayDay && st.payDay <= todayDay + 3) && !paid;
+                const isAlert = checkIsAlert(st.payDay, paid);
 
                 let rowClass = ""; let nameClass = ""; let icon = "";
                 if (inWaiting) { rowClass = "row-waiting"; nameClass = "name-waiting"; icon = "⏳"; }
@@ -340,6 +597,43 @@
         a.download = `weacademy_backup.json`;
         a.click();
     }
+
+    function importData(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                data = JSON.parse(ev.target.result);
+                save(); render();
+                alert('¡Datos restaurados con éxito!');
+            } catch(err) {
+                alert('Error al leer el archivo.');
+            }
+        };
+        reader.readAsText(e.target.files[0]);
+    }
+
+    // Cerrar el panel de notificaciones si se hace clic fuera de él
+    window.onclick = function(event) {
+        if (!event.target.closest('.top-nav')) {
+            document.getElementById('notif-panel').classList.remove('show');
+        }
+    }
+
+    // Inicialización
+    render();
+    if ("Notification" in window && Notification.permission === "granted") {
+        setTimeout(() => updateNotificationSystem(true), 3000); // Manda push al abrir si hay permiso
+    }
+
+</script>
+<div>
+    <center>
+    <img src="bubu3.gif" height="120px" width="120px">
+    </center>
+</div>
+
+</body>
+</html>
 
     function importData(e) {
         const reader = new FileReader();
